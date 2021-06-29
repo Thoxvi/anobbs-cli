@@ -37,7 +37,7 @@ class BaseUiObject:
         return "\n".join(content_matrix)
 
     def __init__(
-            self, content: AnyStr,
+            self, content: AnyStr = "",
             lr_margin: int = 1,
             lr_padding: int = 1,
             use_line_border: bool = True

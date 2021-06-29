@@ -9,8 +9,8 @@ from imcli.core.base_ui_object import BaseUiObject
 
 
 class Layout(BaseUiObject):
-    def __init__(self, sub_ui_list: List[BaseUiObject] = None):
-        super().__init__("")
+    def __init__(self, sub_ui_list: List[BaseUiObject] = None, **kwargs):
+        super().__init__(**kwargs)
         self._sub_ui_list: List[BaseUiObject] = sub_ui_list if sub_ui_list else []
 
     def add_ui(self, ui: BaseUiObject) -> None:
@@ -18,8 +18,8 @@ class Layout(BaseUiObject):
 
 
 class VerticalLayout(Layout):
-    def __init__(self, sub_ui_list: List[BaseUiObject] = None):
-        super().__init__(sub_ui_list)
+    def __init__(self, sub_ui_list: List[BaseUiObject] = None, **kwargs):
+        super().__init__(sub_ui_list, **kwargs)
 
     def render(self) -> AnyStr:
         return "\n".join(
@@ -30,8 +30,8 @@ class VerticalLayout(Layout):
 
 
 class HorizontalLayout(Layout):
-    def __init__(self, sub_ui_list: List[BaseUiObject] = None):
-        super().__init__(sub_ui_list)
+    def __init__(self, sub_ui_list: List[BaseUiObject] = None, **kwargs):
+        super().__init__(sub_ui_list, **kwargs)
 
     def render(self) -> AnyStr:
         sub_ui_matrix = [
@@ -44,12 +44,6 @@ class HorizontalLayout(Layout):
             for ui
             in sub_ui_matrix
         ])
-        max_x = sum([
-            len(ui.split("\n")[0])
-            for ui
-            in sub_ui_matrix
-        ])
-
         sub_ui_splited_matrix = [
             ui_matrix.split("\n")
             for ui_matrix
