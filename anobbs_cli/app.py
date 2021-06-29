@@ -22,7 +22,7 @@ def set_debug_level(debug: str) -> None:
                         format='%(asctime)s %(name)s %(levelname)s: %(message)s')
 
 
-@click.command()
+@click.group()
 @click.option("--version",
               is_flag=True,
               callback=print_version,
@@ -32,6 +32,7 @@ def set_debug_level(debug: str) -> None:
               "--debug",
               is_flag=True,
               help="Start debug mode")
+@click.argument("action")
 @click.pass_context
 def cli(
         ctx,
@@ -40,7 +41,12 @@ def cli(
     ctx.ensure_object(dict)
     set_debug_level(debug)
 
-    exit(0)
+
+@cli.command()
+@click.argument("Account ID")
+@click.pass_context
+def login(ctx, account_id):
+    pass
 
 
 if __name__ == '__main__':
