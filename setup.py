@@ -1,5 +1,6 @@
-from anobbs_core import AppConstant
 from setuptools import setup, find_packages
+
+from anobbs_cli import AppConstant
 
 setup(
     name=AppConstant.NAME,

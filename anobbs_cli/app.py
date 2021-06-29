@@ -1,9 +1,8 @@
-import click
-import json
 import logging
-import time
-from anobbs_core import AppConstant
-from anobbs_core.lib import BbsManager
+
+import click
+
+from anobbs_cli import AppConstant
 
 logger = logging.getLogger(__name__)
 
