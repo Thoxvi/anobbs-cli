@@ -22,7 +22,7 @@ class AnoBbsClient:
         NOW_ANOCODE = "now_ano_code"
         UI_USE_LINE_BORDER = "use_line_border"
 
-    DEFAULT_CONFIG_PATH = pathlib.Path(f"{os.environ['HOME']}/.config/anobbs_cli/config.json")
+    DEFAULT_CONFIG_PATH = pathlib.Path(f"{os.path.expanduser('~')}/.config/anobbs_cli/config.json")
     DEFAULT_CONFIG = {
         ConfigKeys.ADDR: "http://host:port",
         ConfigKeys.ACCOUNT: "",
