@@ -6,8 +6,9 @@ import json
 import logging
 import os
 import pathlib
-import requests
 from typing import Optional, AnyStr, List
+
+import requests
 
 logger = logging.getLogger("AnoBbsClient")
 
@@ -31,8 +32,11 @@ class AnoBbsClient:
 
     class AnoBbsHttpApi:
         AppendPage = "/api/v1/append_page"
+        BlockAnoCodeByFloorNo = "/api/v1/block_ano_code_by_floor_no"
         GroupList = "/api/v1/group_list"
         CreateAccount = "/api/v1/create_account"
+        CreateAnoCode = "/api/v1/create_ano_code"
+        CreateInvitationCode = "/api/v1/create_invitation_code"
         Login = "/api/v1/login"
         PostPage = "/api/v1/post_page"
         QueryAccount = "/api/v1/query_account"
@@ -120,6 +124,22 @@ class AnoBbsClient:
         if res:
             self.config[self.ConfigKeys.ACCOUNT] = res
             self.__write_config()
+            return res
+        return None
+
+    def create_ic(self) -> Optional[AnyStr]:
+        token = self.config.get(self.ConfigKeys.TOKEN)
+        if not token:
+            return None
+        return self._post(self.AnoBbsHttpApi.CreateInvitationCode, {"token": token})
+
+    def create_ac(self) -> Optional[AnyStr]:
+        token = self.config.get(self.ConfigKeys.TOKEN)
+        if not token:
+            return None
+        res = self._post(self.AnoBbsHttpApi.CreateAnoCode, {"token": token})
+        if res:
+            self.query_account()
             return res
         return None
 
@@ -214,6 +234,12 @@ class AnoBbsClient:
         return self._post(self.AnoBbsHttpApi.QueryAccount, {
             "token": token,
         })
+
+    def block_ac_by_floor_no(self, floor_no: AnyStr) -> Optional[AnyStr]:
+        token = self.config.get(self.ConfigKeys.TOKEN)
+        if not token:
+            return None
+        return self._post(self.AnoBbsHttpApi.BlockAnoCodeByFloorNo, {"token": token, "floor_no": floor_no})
 
 
 try:

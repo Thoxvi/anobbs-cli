@@ -1,3 +1,4 @@
+import json
 import logging
 
 import click
@@ -24,17 +25,105 @@ def set_debug_level(debug: str) -> None:
                         format='%(asctime)s %(name)s %(levelname)s: %(message)s')
 
 
-def create_floor_text(floor: dict) -> Text:
+def create_floor_text(floor_data: dict) -> Text:
     return Text(
-        f"No.{floor.get('no')}\n"
-        f"Owner: {floor.get('owner_ac')}\n"
-        f"Date: {floor.get('create_date')}\n"
+        f"No.{floor_data.get('no')}\n"
+        f"Owner: {floor_data.get('owner_ac')}\n"
+        f"Date: {floor_data.get('create_date')}\n"
         f"\n"
-        f"\t{floor.get('content')}\n",
+        f"\t{floor_data.get('content')}\n",
         64,
         lr_padding=0,
         lr_margin=1,
     )
+
+
+def cli_query_group(page_size=50, page_index=1) -> bool:
+    res = ano_bbs_client.query_group_with_pages(
+        page_index=page_index,
+        page_size=page_size
+    )
+    if res:
+        group_pages = res["pages"]
+        body = VerticalLayout([
+            Text(
+                f"No: {_page.get('first_floor', {}).get('no')}\n"
+                f"ID: {_page.get('id')}\n"
+                f"Owner: {_page.get('owner_ac')}\n"
+                f"Date: {_page.get('update_date')}\n"
+                f"Topic: {_page.get('first_floor', {}).get('content')}",
+                max_lenght=64,
+                min_lenght=64,
+                lr_padding=1,
+                lr_margin=1,
+            )
+            for _page
+            in group_pages
+        ])
+        header = Text(
+            f"Group name: {res['name']}\n"
+            f"Number of pages: {res['pages_count']}\n"
+            f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'] - 1, page_size * page_index)}",
+            max_lenght=128,
+            min_lenght=128,
+            lr_padding=0,
+            use_line_border=False,
+        )
+        print(header.render())
+        print(body.render())
+        return True
+    else:
+        return False
+
+
+def cli_query_page(page_id, page_size=20, page_index=1) -> bool:
+    res = ano_bbs_client.query_page_with_floor(page_id, page_size, page_index)
+    if res:
+        floors = res["floors"]
+        header = Text(
+            f"ID: {res['id']}\n"
+            f"Topic: {floors[0]['content']}\n"
+            f"Number of floors: {res['floors_count']}\n"
+            f"Range: {page_size * (page_index - 1)}-{min(res['floors_count'] - 1, page_size * page_index)}",
+            128,
+            use_line_border=False,
+            lr_padding=0,
+        )
+        body = VerticalLayout([
+            create_floor_text(floor)
+            for floor
+            in floors
+        ])
+        print(header.render())
+        print()
+        print(body.render())
+        return True
+    else:
+        return False
+
+
+def cli_query_account() -> bool:
+    res = ano_bbs_client.query_account()
+    if res:
+        ac_list = res.get("ac_list")
+        ic_list = res.get("ic_list")
+        print(Text(
+            f"ID: {res['id']}\n" +
+            f"Birthday: {res['create_date']}\n" +
+            f"Ano ({len(ac_list)}/{res.get('max_ano_size')})\n" +
+            f"\t- Unblocked\n" +
+            f"\n".join([f"\t\t- {ac['id']}" for ac in ac_list if not ac['is_blocked']]) + "\n" +
+            f"\t- Blocked\n" +
+            f"\n".join([f"\t\t- {ac['id']}" for ac in ac_list if ac['is_blocked']]) + "\n" +
+            f"Ic\n" +
+            f"\t- Unused\n" +
+            f"\n".join([f"\t\t- {ic['id']}" for ic in ic_list if not ic['is_used']]) + "\n" +
+            f"\t- Used\n" +
+            f"\n".join([f"\t\t- {ic['id']}" for ic in ic_list if ic['is_used']]),
+            max_lenght=256
+        ).render())
+        return True
+    return False
 
 
 @click.group()
@@ -73,37 +162,7 @@ def login(ctx):
 @click.option("-p", "--page_index", default=1)
 @click.pass_context
 def pages(ctx, page_size, page_index):
-    res = ano_bbs_client.query_group_with_pages(
-        page_index=page_index,
-        page_size=page_size
-    )
-    if res:
-        header = Text(
-            f"Group name: {res['name']}\n"
-            f"Number of pages: {res['pages_count']}\n"
-            f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'] - 1, page_size * page_index)}",
-            max_lenght=128,
-            min_lenght=128,
-            lr_padding=0,
-            use_line_border=False,
-        )
-        body = VerticalLayout([
-            Text(
-                f"ID: {_page.get('id')}\n"
-                f"Owner: {_page.get('owner_ac')}\n"
-                f"Date: {_page.get('update_date')}\n"
-                f"Topic: {_page.get('first_floor', {}).get('content')}",
-                max_lenght=64,
-                min_lenght=64,
-                lr_padding=1,
-                lr_margin=1,
-            )
-            for _page
-            in res["pages"]
-        ])
-        print(header.render())
-        print(body.render())
-
+    if cli_query_group(page_size, page_index):
         ctx.exit(0)
     else:
         ctx.exit(1)
@@ -115,26 +174,7 @@ def pages(ctx, page_size, page_index):
 @click.option("--page_size", default=50)
 @click.pass_context
 def page(ctx, page_id, page_size, page_index):
-    res = ano_bbs_client.query_page_with_floor(page_id, page_size, page_index)
-    if res:
-        floors = res["floors"]
-        header = Text(
-            f"ID: {res['id']}\n"
-            f"Topic: {floors[0]['content']}\n"
-            f"Number of floors: {res['floors_count']}\n"
-            f"Range: {page_size * (page_index - 1)}-{min(res['floors_count'] - 1, page_size * page_index)}",
-            128,
-            use_line_border=False,
-            lr_padding=0,
-        )
-        body = VerticalLayout([
-            create_floor_text(floor)
-            for floor
-            in floors
-        ])
-        print(header.render())
-        print()
-        print(body.render())
+    if cli_query_page(page_id, page_size, page_index):
         ctx.exit(0)
     else:
         ctx.exit(1)
@@ -146,9 +186,10 @@ def page(ctx, page_id, page_size, page_index):
 def post(ctx, content):
     res = ano_bbs_client.post_page(content)
     if res:
-        print(f"Page ID: {res}")
+        cli_query_page(res)
         ctx.exit(0)
     else:
+        print("Post failed")
         ctx.exit(1)
 
 
@@ -160,6 +201,70 @@ def append(ctx, page_id, content):
     res = ano_bbs_client.append_page(page_id, content)
     if res:
         print(create_floor_text(res).render())
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.pass_context
+def account(ctx):
+    if cli_query_account():
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.pass_context
+def config(ctx):
+    print(json.dumps(ano_bbs_client.config, indent=2))
+    ctx.exit(0)
+
+
+@cli.command()
+@click.pass_context
+def create_ic(ctx):
+    res = ano_bbs_client.create_ic()
+    if res:
+        print(f"New InvitationCode: {res}")
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.pass_context
+def create_ac(ctx):
+    res = ano_bbs_client.create_ac()
+    if res:
+        print(f"New AnoCode: {res}")
+        ano_bbs_client.query_account()
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.argument("invitation_code")
+@click.argument("content")
+@click.pass_context
+def create_account(ctx, invitation_code):
+    res = ano_bbs_client.create_account(invitation_code)
+    if res:
+        account(ctx)
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.argument("floor_no")
+@click.pass_context
+def block(ctx, floor_no):
+    res = ano_bbs_client.block_ac_by_floor_no(floor_no)
+    if res:
+        print(f"Anocode blocked: {res}")
         ctx.exit(0)
     else:
         ctx.exit(1)
