@@ -24,6 +24,8 @@ pip3 install -e .
 ### 0x02 Config
 
 ```shell
+# Create config file
+anobbs config
 vim ~/.config/anobbs_cli/config.json
 # Replace `address` with the real address, like `http://localhost:8080`
 ```
