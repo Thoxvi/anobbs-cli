@@ -1,13 +1,18 @@
 import json
 import logging
+import time
 
 import click
 
 from anobbs_cli import AppConstant
 from anobbs_cli.lib import ano_bbs_client
-from imcli import VerticalLayout, Text
+from imcli import VerticalLayout, Text, AnyStr
 
 logger = logging.getLogger(__name__)
+
+
+def format_time(timestamp: float) -> AnyStr:
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
 
 
 def print_version(ctx, _, value):
@@ -29,12 +34,12 @@ def create_floor_text(floor_data: dict) -> Text:
     return Text(
         f"No.{floor_data.get('no')}\n"
         f"Owner: {floor_data.get('owner_ac')}\n"
-        f"Date: {floor_data.get('create_date')}\n"
+        f"Date: {format_time(floor_data.get('create_date'))}\n"
         f"\n"
         f"\t{floor_data.get('content')}\n",
         64,
         lr_padding=0,
-        lr_margin=1,
+        lr_margin=4,
         use_line_border=ano_bbs_client.config[ano_bbs_client.ConfigKeys.UI_USE_LINE_BORDER]
     )
 
@@ -51,10 +56,10 @@ def cli_query_group(page_size=50, page_index=1) -> bool:
                 f"No: {_page.get('first_floor', {}).get('no')}\n"
                 f"ID: {_page.get('id')}\n"
                 f"Owner: {_page.get('owner_ac')}\n"
-                f"Date: {_page.get('update_date')}\n"
-                f"Topic: {_page.get('first_floor', {}).get('content')}\n",
+                f"Date: {format_time(_page.get('update_date'))}\n"
+                f"Topic: {_page.get('first_floor', {}).get('content')}\n\n",
                 max_lenght=64,
-                min_lenght=64,
+                min_lenght=0,
                 lr_padding=1,
                 lr_margin=4,
                 use_line_border=ano_bbs_client.config[ano_bbs_client.ConfigKeys.UI_USE_LINE_BORDER]
@@ -65,9 +70,9 @@ def cli_query_group(page_size=50, page_index=1) -> bool:
         header = Text(
             f"Group name: {res['name']}\n" +
             f"Number of pages: {res['pages_count']}\n" +
-            f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'], page_size * page_index)}",
+            f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'], page_size * page_index)}\n",
             max_lenght=128,
-            min_lenght=60,
+            min_lenght=0,
             lr_padding=1,
             lr_margin=1,
             use_line_border=False,
@@ -113,7 +118,7 @@ def cli_query_account() -> bool:
         ic_list = res.get("ic_list")
         print(Text(
             f"ID: {res['id']}\n" +
-            f"Birthday: {res['create_date']}\n" +
+            f"Birthday: {format_time(res['create_date'])}\n" +
             f"Ano ({len(ac_list)}/{res.get('max_ano_size')})\n" +
             f"\t- Unblocked\n" +
             f"\n".join([f"\t\t- {ac['id']}" for ac in ac_list if not ac['is_blocked']]) + "\n" +
