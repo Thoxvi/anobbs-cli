@@ -27,7 +27,7 @@ class AnoBbsClient:
         ConfigKeys.ADDR: "http://host:port",
         ConfigKeys.ACCOUNT: "",
         ConfigKeys.TOKEN: "",
-        ConfigKeys.ANOCODES: "",
+        ConfigKeys.ANOCODES: [],
         ConfigKeys.NOW_ANOCODE: "",
         ConfigKeys.UI_USE_LINE_BORDER: False,
     }
