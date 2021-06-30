@@ -35,6 +35,7 @@ def create_floor_text(floor_data: dict) -> Text:
         64,
         lr_padding=0,
         lr_margin=1,
+        use_line_border=ano_bbs_client.config[ano_bbs_client.ConfigKeys.UI_USE_LINE_BORDER]
     )
 
 

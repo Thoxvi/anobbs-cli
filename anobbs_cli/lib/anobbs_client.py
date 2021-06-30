@@ -20,6 +20,7 @@ class AnoBbsClient:
         TOKEN = "token"
         ANOCODES = "ano_codes"
         NOW_ANOCODE = "now_ano_code"
+        UI_USE_LINE_BORDER = "use_line_border"
 
     DEFAULT_CONFIG_PATH = pathlib.Path(f"{os.environ['HOME']}/.config/anobbs_cli/config.json")
     DEFAULT_CONFIG = {
@@ -28,6 +29,7 @@ class AnoBbsClient:
         ConfigKeys.TOKEN: "",
         ConfigKeys.ANOCODES: "",
         ConfigKeys.NOW_ANOCODE: "",
+        ConfigKeys.UI_USE_LINE_BORDER: False,
     }
 
     class AnoBbsHttpApi:
@@ -67,7 +69,10 @@ class AnoBbsClient:
             return None
         else:
             with open(self.DEFAULT_CONFIG_PATH, "r") as file:
-                config = json.load(file)
+                config = {
+                    **self.DEFAULT_CONFIG,
+                    **json.load(file)
+                }
             return config
 
     @staticmethod
