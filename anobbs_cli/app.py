@@ -247,24 +247,40 @@ def create_ac(ctx):
 
 @cli.command()
 @click.argument("invitation_code")
-@click.argument("content")
 @click.pass_context
-def create_account(ctx, invitation_code):
+def register(ctx, invitation_code):
     res = ano_bbs_client.create_account(invitation_code)
     if res:
-        account(ctx)
+        cli_query_account()
         ctx.exit(0)
     else:
         ctx.exit(1)
 
 
-@cli.command()
+@cli.group()
+@click.pass_context
+def admin(_):
+    pass
+
+
+@admin.command()
 @click.argument("floor_no")
 @click.pass_context
 def block(ctx, floor_no):
     res = ano_bbs_client.block_ac_by_floor_no(floor_no)
     if res:
         print(f"Anocode blocked: {res}")
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@admin.command()
+@click.pass_context
+def account_tree(ctx):
+    res = ano_bbs_client.query_account_tree()
+    if res:
+        print(res)
         ctx.exit(0)
     else:
         ctx.exit(1)

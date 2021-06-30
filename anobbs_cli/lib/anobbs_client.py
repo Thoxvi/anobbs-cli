@@ -40,6 +40,7 @@ class AnoBbsClient:
         Login = "/api/v1/login"
         PostPage = "/api/v1/post_page"
         QueryAccount = "/api/v1/query_account"
+        QueryAccountTree = "/api/v1/query_account_tree"
         QueryGroupWithPages = "/api/v1/query_group_with_pages"
         QueryPageWithFloors = "/api/v1/query_page_with_floors"
         HelloWorld = "/api/v1/hello_world"
@@ -123,6 +124,7 @@ class AnoBbsClient:
         res = self._post(self.AnoBbsHttpApi.CreateAccount, {"invitation_code": ic})
         if res:
             self.config[self.ConfigKeys.ACCOUNT] = res
+            self.login()
             self.__write_config()
             return res
         return None
@@ -232,6 +234,15 @@ class AnoBbsClient:
         if not token:
             return None
         return self._post(self.AnoBbsHttpApi.QueryAccount, {
+            "token": token,
+        })
+
+    def query_account_tree(self) -> Optional[AnyStr]:
+        token = self.config.get(self.ConfigKeys.TOKEN)
+        if not token:
+            return None
+
+        return self._post(self.AnoBbsHttpApi.QueryAccountTree, {
             "token": token,
         })
 
