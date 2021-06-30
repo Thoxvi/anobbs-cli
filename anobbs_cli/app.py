@@ -63,7 +63,7 @@ def cli_query_group(page_size=50, page_index=1) -> bool:
         header = Text(
             f"Group name: {res['name']}\n"
             f"Number of pages: {res['pages_count']}\n"
-            f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'] - 1, page_size * page_index)}",
+            f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'], page_size * page_index)}",
             max_lenght=128,
             min_lenght=128,
             lr_padding=0,
