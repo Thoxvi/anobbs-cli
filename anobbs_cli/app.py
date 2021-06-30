@@ -52,25 +52,28 @@ def cli_query_group(page_size=50, page_index=1) -> bool:
                 f"ID: {_page.get('id')}\n"
                 f"Owner: {_page.get('owner_ac')}\n"
                 f"Date: {_page.get('update_date')}\n"
-                f"Topic: {_page.get('first_floor', {}).get('content')}",
+                f"Topic: {_page.get('first_floor', {}).get('content')}\n",
                 max_lenght=64,
                 min_lenght=64,
                 lr_padding=1,
-                lr_margin=1,
+                lr_margin=4,
+                use_line_border=ano_bbs_client.config[ano_bbs_client.ConfigKeys.UI_USE_LINE_BORDER]
             )
             for _page
             in group_pages
         ])
         header = Text(
-            f"Group name: {res['name']}\n"
-            f"Number of pages: {res['pages_count']}\n"
+            f"Group name: {res['name']}\n" +
+            f"Number of pages: {res['pages_count']}\n" +
             f"Range: {page_size * (page_index - 1)}-{min(res['pages_count'], page_size * page_index)}",
             max_lenght=128,
-            min_lenght=128,
-            lr_padding=0,
+            min_lenght=60,
+            lr_padding=1,
+            lr_margin=1,
             use_line_border=False,
         )
         print(header.render())
+        print()
         print(body.render())
         return True
     else:

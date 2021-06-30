@@ -42,4 +42,5 @@ anobbs config
 
 ```shell
 anobbs --help
+# anobbs post 'Hello, AnoBBS!'
 ```
