@@ -57,6 +57,7 @@ def cli_query_group(page_size=50, page_index=1) -> bool:
                 f"ID: {_page.get('id')}\n"
                 f"Owner: {_page.get('owner_ac')}\n"
                 f"Date: {format_time(_page.get('update_date'))}\n"
+                f"Count: {_page.get('floor_count')}\n"
                 f"Topic: {_page.get('first_floor', {}).get('content')}\n\n",
                 max_lenght=64,
                 min_lenght=0,
