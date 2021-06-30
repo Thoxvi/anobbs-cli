@@ -42,7 +42,7 @@ class BaseUiObject:
             lr_padding: int = 1,
             use_line_border: bool = True
     ):
-        self._content = content
+        self._content = content.replace("\t", " " * 4)
         self._lr_margin = lr_margin
         self._lr_padding = lr_padding
         self._use_line_border = use_line_border

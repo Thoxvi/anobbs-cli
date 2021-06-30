@@ -11,6 +11,9 @@ from imcli.core.base_ui_object import BaseUiObject
 class Layout(BaseUiObject):
     def __init__(self, sub_ui_list: List[BaseUiObject] = None, **kwargs):
         super().__init__(**kwargs)
+        self._use_line_border = kwargs.get("use_line_border", False)
+        self._lr_margin = kwargs.get("lr_margin", 0)
+        self._lr_padding = kwargs.get("lr_padding", 0)
         self._sub_ui_list: List[BaseUiObject] = sub_ui_list if sub_ui_list else []
 
     def add_ui(self, ui: BaseUiObject) -> None:
@@ -22,11 +25,12 @@ class VerticalLayout(Layout):
         super().__init__(sub_ui_list, **kwargs)
 
     def render(self) -> AnyStr:
-        return "\n".join(
+        self._content = "\n".join(
             ui.render()
             for ui
             in self._sub_ui_list
         )
+        return super(VerticalLayout, self).render()
 
 
 class HorizontalLayout(Layout):
@@ -63,7 +67,8 @@ class HorizontalLayout(Layout):
                 else:
                     line += " " * sub_ui_x_list[x]
             output.append(line)
-        return "\n".join(output)
+        self._content = "\n".join(output)
+        return super(HorizontalLayout, self).render()
 
 
 if __name__ == '__main__':
