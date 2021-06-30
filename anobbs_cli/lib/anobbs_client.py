@@ -6,9 +6,8 @@ import json
 import logging
 import os
 import pathlib
-from typing import Optional, AnyStr, List
-
 import requests
+from typing import Optional, AnyStr, List
 
 logger = logging.getLogger("AnoBbsClient")
 
@@ -84,17 +83,19 @@ class AnoBbsClient:
             data = res.json()
             if data.get("code", 1) == 0:
                 return data.get("data")
+            else:
+                logger.error(f"{api} {method.upper()} {data}")
         return None
 
     @staticmethod
-    def post(
+    def _post(
             api: AnyStr,
             data: Optional[dict] = None,
     ):
         return AnoBbsClient.__send_request(api, "post", data)
 
     @staticmethod
-    def get(api: AnyStr) -> Optional[dict]:
+    def _get(api: AnyStr) -> Optional[dict]:
         return AnoBbsClient.__send_request(api, "get")
 
     def __init__(self):
@@ -109,13 +110,13 @@ class AnoBbsClient:
 
     def hello_world(self) -> bool:
         try:
-            return self.get(self.AnoBbsHttpApi.HelloWorld) is not None
+            return self._get(self.AnoBbsHttpApi.HelloWorld) is not None
         except Exception as error:
             logger.error(error)
             return False
 
     def create_account(self, ic: AnyStr) -> Optional[AnyStr]:
-        res = self.post(self.AnoBbsHttpApi.CreateAccount, {"invitation_code": ic})
+        res = self._post(self.AnoBbsHttpApi.CreateAccount, {"invitation_code": ic})
         if res:
             self.config[self.ConfigKeys.ACCOUNT] = res
             self.__write_config()
@@ -123,7 +124,7 @@ class AnoBbsClient:
         return None
 
     def login(self) -> Optional[AnyStr]:
-        res = self.post(self.AnoBbsHttpApi.Login, {
+        res = self._post(self.AnoBbsHttpApi.Login, {
             "account_id": self.config.get(self.ConfigKeys.ACCOUNT)
         })
         if res:
@@ -149,7 +150,7 @@ class AnoBbsClient:
         return None
 
     def list_group(self) -> Optional[List[AnyStr]]:
-        return self.get(self.AnoBbsHttpApi.GroupList)
+        return self._get(self.AnoBbsHttpApi.GroupList)
 
     def append_page(self, page_id: AnyStr, content: AnyStr) -> Optional[dict]:
         token = self.config.get(self.ConfigKeys.TOKEN)
@@ -160,10 +161,10 @@ class AnoBbsClient:
         if not ac:
             return None
 
-        return self.post(self.AnoBbsHttpApi.AppendPage, {
+        return self._post(self.AnoBbsHttpApi.AppendPage, {
             "page_id": page_id,
             "token": token,
-            "ac_id": ac,
+            "ano_code": ac,
             "content": content,
         })
 
@@ -175,9 +176,9 @@ class AnoBbsClient:
         if not ac:
             return None
 
-        return self.post(self.AnoBbsHttpApi.PostPage, {
+        return self._post(self.AnoBbsHttpApi.PostPage, {
             "token": token,
-            "ac_id": ac,
+            "ano_code": ac,
             "content": content,
             "group_name": group_name,
         })
@@ -188,7 +189,7 @@ class AnoBbsClient:
             page_size: int = 30,
             page_index: int = 1,
     ) -> Optional[dict]:
-        return self.post(self.AnoBbsHttpApi.QueryGroupWithPages, {
+        return self._post(self.AnoBbsHttpApi.QueryGroupWithPages, {
             "group_name": group_name,
             "page_size": page_size,
             "page_index": page_index,
@@ -200,7 +201,7 @@ class AnoBbsClient:
             page_size: int = 50,
             page_index: int = 1,
     ) -> Optional[dict]:
-        return self.post(self.AnoBbsHttpApi.QueryPageWithFloors, {
+        return self._post(self.AnoBbsHttpApi.QueryPageWithFloors, {
             "page_id": page_id,
             "page_size": page_size,
             "page_index": page_index,
@@ -210,7 +211,7 @@ class AnoBbsClient:
         token = self.config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
-        return self.post(self.AnoBbsHttpApi.QueryAccount, {
+        return self._post(self.AnoBbsHttpApi.QueryAccount, {
             "token": token,
         })
 

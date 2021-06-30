@@ -24,6 +24,19 @@ def set_debug_level(debug: str) -> None:
                         format='%(asctime)s %(name)s %(levelname)s: %(message)s')
 
 
+def create_floor_text(floor: dict) -> Text:
+    return Text(
+        f"No.{floor.get('no')}\n"
+        f"Owner: {floor.get('owner_ac')}\n"
+        f"Date: {floor.get('create_date')}\n"
+        f"\n"
+        f"\t{floor.get('content')}\n",
+        64,
+        lr_padding=0,
+        lr_margin=1,
+    )
+
+
 @click.group()
 @click.option("--version",
               is_flag=True,
@@ -115,20 +128,38 @@ def page(ctx, page_id, page_size, page_index):
             lr_padding=0,
         )
         body = VerticalLayout([
-            Text(
-                f"{floor.get('owner_ac')} {floor.get('create_date')} {floor.get('no')}\n"
-                f"\n"
-                f"  {floor.get('content')}\n",
-                64,
-                lr_padding=0,
-                lr_margin=1,
-            )
+            create_floor_text(floor)
             for floor
             in floors
         ])
         print(header.render())
         print()
         print(body.render())
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.argument("content")
+@click.pass_context
+def post(ctx, content):
+    res = ano_bbs_client.post_page(content)
+    if res:
+        print(f"Page ID: {res}")
+        ctx.exit(0)
+    else:
+        ctx.exit(1)
+
+
+@cli.command()
+@click.argument("page_id")
+@click.argument("content")
+@click.pass_context
+def append(ctx, page_id, content):
+    res = ano_bbs_client.append_page(page_id, content)
+    if res:
+        print(create_floor_text(res).render())
         ctx.exit(0)
     else:
         ctx.exit(1)
