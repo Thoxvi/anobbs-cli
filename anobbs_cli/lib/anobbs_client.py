@@ -111,7 +111,7 @@ class AnoBbsClient:
     def __init__(self):
         self.config = self.__get_config()
         if self.config is None:
-            raise RuntimeError(f"Please edit config file: {self.DEFAULT_CONFIG_PATH}")
+            raise RuntimeError(f"Config file not be found: {self.DEFAULT_CONFIG_PATH}")
         else:
             self.AnoBbsHttpApi.add_addr(self.config[self.ConfigKeys.ADDR])
         self.account_id = self.config.get(self.ConfigKeys.ACCOUNT)
@@ -261,5 +261,6 @@ class AnoBbsClient:
 try:
     ano_bbs_client = AnoBbsClient()
 except RuntimeError as err:
+    logging.warning(f"Please edit config file: {AnoBbsClient.DEFAULT_CONFIG_PATH}")
     logging.error(err)
     exit(1)
