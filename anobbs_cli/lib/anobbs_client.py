@@ -15,21 +15,31 @@ logger = logging.getLogger("AnoBbsClient")
 
 class AnoBbsClient:
     class ConfigKeys:
+        # Config
         ADDR = "address"
         ACCOUNT = "account_id"
         TOKEN = "token"
         ANOCODES = "ano_codes"
         NOW_ANOCODE = "now_ano_code"
         UI_USE_LINE_BORDER = "use_line_border"
+        # Cache
+        CACHE_PAGES = "cache_page_id_list"
+        CACHE_NOS = "cache_no_list"
+        CACHE_ACS = "cache_anocode_list"
 
     DEFAULT_CONFIG_PATH = pathlib.Path(f"{os.path.expanduser('~')}/.config/anobbs_cli/config.json")
     DEFAULT_CONFIG = {
+        # Config
         ConfigKeys.ADDR: "http://host:port",
         ConfigKeys.ACCOUNT: "",
         ConfigKeys.TOKEN: "",
         ConfigKeys.ANOCODES: [],
         ConfigKeys.NOW_ANOCODE: "",
         ConfigKeys.UI_USE_LINE_BORDER: False,
+        # Cache
+        ConfigKeys.CACHE_PAGES: [],
+        ConfigKeys.CACHE_NOS: [],
+        ConfigKeys.CACHE_ACS: [],
     }
 
     class AnoBbsHttpApi:
@@ -216,11 +226,30 @@ class AnoBbsClient:
             page_size: int = 30,
             page_index: int = 1,
     ) -> Optional[dict]:
-        return self._post(self.AnoBbsHttpApi.QueryGroupWithPages, {
+        group = self._post(self.AnoBbsHttpApi.QueryGroupWithPages, {
             "group_name": group_name,
             "page_size": page_size,
             "page_index": page_index,
         })
+        if group:
+            self.config[self.ConfigKeys.CACHE_PAGES] = list(
+                set(self.config[self.ConfigKeys.CACHE_PAGES]).union(
+                    [
+                        page["id"]
+                        for page
+                        in group["pages"]
+                    ])
+            )
+            self.config[self.ConfigKeys.CACHE_ACS] = list(
+                set(self.config[self.ConfigKeys.CACHE_ACS]).union(
+                    [
+                        page["owner_ac"]
+                        for page
+                        in group["pages"]
+                    ])
+            )
+            self.__write_config()
+        return group
 
     def query_page_with_floor(
             self,
@@ -228,11 +257,30 @@ class AnoBbsClient:
             page_size: int = 50,
             page_index: int = 1,
     ) -> Optional[dict]:
-        return self._post(self.AnoBbsHttpApi.QueryPageWithFloors, {
+        page = self._post(self.AnoBbsHttpApi.QueryPageWithFloors, {
             "page_id": page_id,
             "page_size": page_size,
             "page_index": page_index,
         })
+        if page:
+            self.config[self.ConfigKeys.CACHE_ACS] = list(
+                set(self.config[self.ConfigKeys.CACHE_ACS]).union(
+                    [
+                        floor["owner_ac"]
+                        for floor
+                        in page["floors"]
+                    ])
+            )
+            self.config[self.ConfigKeys.CACHE_NOS] = list(
+                set(self.config[self.ConfigKeys.CACHE_NOS]).union(
+                    [
+                        floor["no"]
+                        for floor
+                        in page["floors"]
+                    ])
+            )
+            self.__write_config()
+        return page
 
     def query_account(self) -> Optional[dict]:
         token = self.config.get(self.ConfigKeys.TOKEN)

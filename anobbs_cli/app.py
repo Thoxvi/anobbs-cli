@@ -179,7 +179,11 @@ def pages(ctx, page_size, page_index):
 
 
 @cli.command()
-@click.argument("page_id")
+@click.argument(
+    "page_id",
+    type=click.STRING,
+    autocompletion=lambda *args, **kwargs: ano_bbs_client.config[ano_bbs_client.ConfigKeys.CACHE_PAGES],
+)
 @click.option("-p", "--page_index", default=1)
 @click.option("--page_size", default=50)
 @click.pass_context
@@ -204,7 +208,11 @@ def post(ctx, content):
 
 
 @cli.command()
-@click.argument("page_id")
+@click.argument(
+    "page_id",
+    type=click.STRING,
+    autocompletion=lambda *args, **kwargs: ano_bbs_client.config[ano_bbs_client.ConfigKeys.CACHE_PAGES],
+)
 @click.argument("content")
 @click.pass_context
 def append(ctx, page_id, content):
@@ -228,7 +236,11 @@ def account(ctx):
 @cli.command()
 @click.pass_context
 def config(ctx):
-    print(json.dumps(ano_bbs_client.config, indent=2))
+    config_obj = ano_bbs_client.config
+    for key in list(config_obj.keys()):
+        if key.startswith("cache_"):
+            config_obj.pop(key)
+    print(json.dumps(config_obj, indent=2))
     ctx.exit(0)
 
 
@@ -274,7 +286,11 @@ def admin(_):
 
 
 @admin.command()
-@click.argument("floor_no")
+@click.argument(
+    "floor_no",
+    type=click.STRING,
+    autocompletion=lambda *args, **kwargs: ano_bbs_client.config[ano_bbs_client.ConfigKeys.CACHE_NOS],
+)
 @click.pass_context
 def block(ctx, floor_no):
     res = ano_bbs_client.block_ac_by_floor_no(floor_no)
