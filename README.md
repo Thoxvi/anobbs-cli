@@ -6,6 +6,14 @@ The command line interface of AnoBBS HTTP module.
 
 ### 0x01 Install
 
+As a user:
+
+```shell
+pip3 install --user git+https://github.com/Thoxvi/AnoBBS-Cli@main#egg=Ano-BBS-Cli --upgrade
+```
+
+As a developer:
+
 ```shell
 # Install
 git clone https://github.com/Thoxvi/AnoBBS-Cli.git anobbs
@@ -19,6 +27,22 @@ cd anobbs
 git pull
 source ./venv/bin/activate
 pip3 install -e .
+```
+
+Add `~/.local/bin` into `PATH` for `linux` user
+
+```shell
+which_shell=$(echo $SHELL|sed 's;^.*/;;g')
+echo "export PATH=$HOME/.local/bin:\$PATH" >> $HOME/.${which_shell}rc
+source $HOME/.${which_shell}rc
+```
+
+Autocomplete for `linux` user
+
+```shell
+which_shell=$(echo $SHELL|sed 's;^.*/;;g')
+echo eval \"\$\(_ANOBBS_COMPLETE=source_${which_shell} anobbs\)\" >> $HOME/.${which_shell}rc
+source $HOME/.${which_shell}rc
 ```
 
 ### 0x02 Config
