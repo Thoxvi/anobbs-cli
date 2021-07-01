@@ -37,7 +37,7 @@ echo "export PATH=$HOME/.local/bin:\$PATH" >> $HOME/.${which_shell}rc
 source $HOME/.${which_shell}rc
 ```
 
-Autocomplete for `linux` user
+Autocomplete for `linux` and `macos` user
 
 ```shell
 which_shell=$(echo $SHELL|sed 's;^.*/;;g')
