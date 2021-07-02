@@ -120,12 +120,12 @@ def cli_query_account() -> bool:
         print(Text(
             f"ID: {res['id']}\n" +
             f"Birthday: {format_time(res['create_date'])}\n" +
-            f"Ano ({len(ac_list)}/{res.get('max_ano_size')})\n" +
+            f"Ano Code ({len(ac_list)}/{res.get('max_ano_size')})\n" +
             f"\t- Unblocked\n" +
             f"\n".join([f"\t\t- {ac['id']}" for ac in ac_list if not ac['is_blocked']]) + "\n" +
             f"\t- Blocked\n" +
             f"\n".join([f"\t\t- {ac['id']}" for ac in ac_list if ac['is_blocked']]) + "\n" +
-            f"Ic\n" +
+            f"Invitation Code\n" +
             f"\t- Unused\n" +
             f"\n".join([f"\t\t- {ic['id']}" for ic in ic_list if not ic['is_used']]) + "\n" +
             f"\t- Used\n" +
