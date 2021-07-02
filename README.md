@@ -50,18 +50,26 @@ source $HOME/.${which_shell}rc
 ```shell
 # Create config file
 anobbs config
-vim ~/.config/anobbs_cli/config.json
-# Replace `address` with the real address, like `http://localhost:8080`
+anobbs addr -a [Address]
+# Replace `Address` with the real address, like `http://localhost:8080`
 ```
 
-### 0x03 Find an invitation code
+### 0x03 Find an invitation code or account
+
+#### Register
 
 ```shell
 # Register
 anobbs register [Find an invitation code]
-
 # Check if the registration is successful
 anobbs config
+```
+
+#### Existing account
+
+```shell
+# Set account
+anobbs account -a [Account ID]
 ```
 
 ### 0x04 Have fun!
