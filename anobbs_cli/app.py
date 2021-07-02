@@ -250,7 +250,7 @@ def check(ctx):
     account_id = config_obj[ano_bbs_client.ConfigKeys.ACCOUNT]
 
     logger.info(f"User config file: {config_path}")
-    logger.info(f"Config obj: {json.dumps(config_obj, indent=2)}")
+    logger.info(f"Config obj: \n{json.dumps(config_obj, indent=2)}")
     logger.info(f"Try to connect server: {server_addr}...")
     if not ano_bbs_client.hello_world():
         logger.error(
