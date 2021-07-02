@@ -9,14 +9,14 @@ The command line interface of AnoBBS HTTP module.
 As a user:
 
 ```shell
-pip3 install --user git+https://github.com/Thoxvi/anobbs_cli@main#egg=Ano-BBS-Cli --upgrade
+pip3 install --user git+https://github.com/Thoxvi/anobbs-cli@main#egg=Ano-BBS-Cli --upgrade
 ```
 
 As a developer:
 
 ```shell
 # Install
-git clone https://github.com/Thoxvi/anobbs_cli.git anobbs
+git clone https://github.com/Thoxvi/anobbs-cli.git anobbs
 cd anobbs
 python3 -m venv venv
 source ./venv/bin/activate
