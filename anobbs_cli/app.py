@@ -182,7 +182,7 @@ def pages(ctx, page_size, page_index):
 @click.argument(
     "page_id",
     type=click.STRING,
-    autocompletion=lambda *args, **kwargs: ano_bbs_client.config[ano_bbs_client.ConfigKeys.CACHE_PAGES],
+    autocompletion=lambda *args, **kwargs: ano_bbs_client.cache[ano_bbs_client.ConfigKeys.CACHE_PAGES],
 )
 @click.option("-p", "--page_index", default=1)
 @click.option("--page_size", default=50)
@@ -211,7 +211,7 @@ def post(ctx, content):
 @click.argument(
     "page_id",
     type=click.STRING,
-    autocompletion=lambda *args, **kwargs: ano_bbs_client.config[ano_bbs_client.ConfigKeys.CACHE_PAGES],
+    autocompletion=lambda *args, **kwargs: ano_bbs_client.cache[ano_bbs_client.ConfigKeys.CACHE_PAGES],
 )
 @click.argument("content")
 @click.pass_context
@@ -237,9 +237,6 @@ def account(ctx):
 @click.pass_context
 def config(ctx):
     config_obj = ano_bbs_client.config
-    for key in list(config_obj.keys()):
-        if key.startswith("cache_"):
-            config_obj.pop(key)
     print(json.dumps(config_obj, indent=2))
     ctx.exit(0)
 
@@ -247,15 +244,36 @@ def config(ctx):
 @cli.command()
 @click.pass_context
 def check(ctx):
-    if ano_bbs_client.hello_world():
-        ctx.exit(0)
-    else:
+    config_obj = ano_bbs_client.config
+    config_path = ano_bbs_client.DEFAULT_CONFIG_PATH.absolute()
+    server_addr = config_obj[ano_bbs_client.ConfigKeys.ADDR]
+    account_id = config_obj[ano_bbs_client.ConfigKeys.ACCOUNT]
+
+    logger.info(f"User config file: {config_path}")
+    logger.info(f"Config obj: {json.dumps(config_obj, indent=2)}")
+    logger.info(f"Try to connect server: {server_addr}...")
+    if not ano_bbs_client.hello_world():
         logger.error(
             f"There are some errors, \n"
-            f"please check address: {ano_bbs_client.config[ano_bbs_client.ConfigKeys.ADDR]}\n"
+            f"please check the address: {server_addr}\n"
             f"(or there are some problems in the server, Maybe you should ask the admin"
         )
         ctx.exit(1)
+    logger.info("Connect server success!")
+    logger.info("Try to login...")
+    if not ano_bbs_client.login():
+        if account_id:
+            logger.error(
+                f"Login failed, \n"
+                f"please check the account id: {account_id}\n"
+            )
+        else:
+            logger.error(f"You account id is empty!")
+        ctx.exit(1)
+    logger.info("Login success!")
+    print()
+    cli_query_account()
+    ctx.exit(0)
 
 
 @cli.command()
@@ -303,7 +321,7 @@ def admin(_):
 @click.argument(
     "floor_no",
     type=click.STRING,
-    autocompletion=lambda *args, **kwargs: ano_bbs_client.config[ano_bbs_client.ConfigKeys.CACHE_NOS],
+    autocompletion=lambda *args, **kwargs: ano_bbs_client.cache[ano_bbs_client.ConfigKeys.CACHE_NOS],
 )
 @click.pass_context
 def block(ctx, floor_no):

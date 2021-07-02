@@ -2,6 +2,7 @@ __all__ = [
     "ano_bbs_client",
 ]
 
+import copy
 import json
 import logging
 import os
@@ -69,7 +70,7 @@ class AnoBbsClient:
     def __write_config(self):
         self.__get_config()
         with open(self.DEFAULT_CONFIG_PATH, "w") as file:
-            file.write(json.dumps(self.config, indent=2))
+            file.write(json.dumps(self.__config, indent=2))
 
     def __get_config(self) -> Optional[dict]:
         os.makedirs(self.DEFAULT_CONFIG_PATH.parent, exist_ok=True)
@@ -119,11 +120,27 @@ class AnoBbsClient:
         return AnoBbsClient.__send_request(api, "get")
 
     def __init__(self):
-        self.config = self.__get_config()
-        if self.config is None:
+        self.__config = self.__get_config()
+        if self.__config is None:
             raise RuntimeError(f"Config file not be found: {self.DEFAULT_CONFIG_PATH}")
         else:
-            self.AnoBbsHttpApi.add_addr(self.config[self.ConfigKeys.ADDR])
+            self.AnoBbsHttpApi.add_addr(self.__config[self.ConfigKeys.ADDR])
+
+    @property
+    def config(self):
+        config = copy.deepcopy(self.__config)
+        for key in list(config.keys()):
+            if key.startswith("cache_"):
+                config.pop(key)
+        return config
+
+    @property
+    def cache(self):
+        cache = copy.deepcopy(self.__config)
+        for key in list(cache.keys()):
+            if not key.startswith("cache_"):
+                cache.pop(key)
+        return cache
 
     def hello_world(self) -> bool:
         try:
@@ -135,20 +152,20 @@ class AnoBbsClient:
     def create_account(self, ic: AnyStr) -> Optional[AnyStr]:
         res = self._post(self.AnoBbsHttpApi.CreateAccount, {"invitation_code": ic})
         if res:
-            self.config[self.ConfigKeys.ACCOUNT] = res
+            self.__config[self.ConfigKeys.ACCOUNT] = res
             self.login()
             self.__write_config()
             return res
         return None
 
     def create_ic(self) -> Optional[AnyStr]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
         return self._post(self.AnoBbsHttpApi.CreateInvitationCode, {"token": token})
 
     def create_ac(self) -> Optional[AnyStr]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
         res = self._post(self.AnoBbsHttpApi.CreateAnoCode, {"token": token})
@@ -159,10 +176,10 @@ class AnoBbsClient:
 
     def login(self) -> Optional[AnyStr]:
         res = self._post(self.AnoBbsHttpApi.Login, {
-            "account_id": self.config.get(self.ConfigKeys.ACCOUNT)
+            "account_id": self.__config.get(self.ConfigKeys.ACCOUNT)
         })
         if res:
-            self.config[self.ConfigKeys.TOKEN] = res
+            self.__config[self.ConfigKeys.TOKEN] = res
             account = self.query_account()
             if account:
                 ac_list = [
@@ -171,10 +188,10 @@ class AnoBbsClient:
                     in account.get("ac_list", [])
                     if not ac_obj.get("is_blocked")
                 ]
-                self.config[self.ConfigKeys.ANOCODES] = ac_list
+                self.__config[self.ConfigKeys.ANOCODES] = ac_list
                 if len(ac_list) > 0:
                     default_anocode = ac_list[0]
-                    self.config[self.ConfigKeys.NOW_ANOCODE] = default_anocode
+                    self.__config[self.ConfigKeys.NOW_ANOCODE] = default_anocode
                     logger.info(
                         f"You can select default anocode in {self.DEFAULT_CONFIG_PATH}\n"
                         f"Now anocode: {default_anocode}"
@@ -187,11 +204,11 @@ class AnoBbsClient:
         return self._get(self.AnoBbsHttpApi.GroupList)
 
     def append_page(self, page_id: AnyStr, content: AnyStr) -> Optional[dict]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
 
-        ac = self.config.get(self.ConfigKeys.NOW_ANOCODE)
+        ac = self.__config.get(self.ConfigKeys.NOW_ANOCODE)
         if not ac:
             return None
 
@@ -203,10 +220,10 @@ class AnoBbsClient:
         })
 
     def post_page(self, content: AnyStr, group_name: AnyStr = "all") -> Optional[dict]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
-        ac = self.config.get(self.ConfigKeys.NOW_ANOCODE)
+        ac = self.__config.get(self.ConfigKeys.NOW_ANOCODE)
         if not ac:
             return None
 
@@ -229,16 +246,16 @@ class AnoBbsClient:
             "page_index": page_index,
         })
         if group:
-            self.config[self.ConfigKeys.CACHE_PAGES] = list(
-                set(self.config[self.ConfigKeys.CACHE_PAGES]).union(
+            self.__config[self.ConfigKeys.CACHE_PAGES] = list(
+                set(self.__config[self.ConfigKeys.CACHE_PAGES]).union(
                     [
                         page["id"]
                         for page
                         in group["pages"]
                     ])
             )
-            self.config[self.ConfigKeys.CACHE_ACS] = list(
-                set(self.config[self.ConfigKeys.CACHE_ACS]).union(
+            self.__config[self.ConfigKeys.CACHE_ACS] = list(
+                set(self.__config[self.ConfigKeys.CACHE_ACS]).union(
                     [
                         page["owner_ac"]
                         for page
@@ -260,16 +277,16 @@ class AnoBbsClient:
             "page_index": page_index,
         })
         if page:
-            self.config[self.ConfigKeys.CACHE_ACS] = list(
-                set(self.config[self.ConfigKeys.CACHE_ACS]).union(
+            self.__config[self.ConfigKeys.CACHE_ACS] = list(
+                set(self.__config[self.ConfigKeys.CACHE_ACS]).union(
                     [
                         floor["owner_ac"]
                         for floor
                         in page["floors"]
                     ])
             )
-            self.config[self.ConfigKeys.CACHE_NOS] = list(
-                set(self.config[self.ConfigKeys.CACHE_NOS]).union(
+            self.__config[self.ConfigKeys.CACHE_NOS] = list(
+                set(self.__config[self.ConfigKeys.CACHE_NOS]).union(
                     [
                         floor["no"]
                         for floor
@@ -280,7 +297,7 @@ class AnoBbsClient:
         return page
 
     def query_account(self) -> Optional[dict]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
         return self._post(self.AnoBbsHttpApi.QueryAccount, {
@@ -288,7 +305,7 @@ class AnoBbsClient:
         })
 
     def query_account_tree(self) -> Optional[AnyStr]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
 
@@ -297,7 +314,7 @@ class AnoBbsClient:
         })
 
     def block_ac_by_floor_no(self, floor_no: AnyStr) -> Optional[AnyStr]:
-        token = self.config.get(self.ConfigKeys.TOKEN)
+        token = self.__config.get(self.ConfigKeys.TOKEN)
         if not token:
             return None
         return self._post(self.AnoBbsHttpApi.BlockAnoCodeByFloorNo, {"token": token, "floor_no": floor_no})
