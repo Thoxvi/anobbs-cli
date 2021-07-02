@@ -136,6 +136,40 @@ def cli_query_account() -> bool:
     return False
 
 
+def cli_check() -> bool:
+    config_obj = ano_bbs_client.config
+    config_path = ano_bbs_client.DEFAULT_CONFIG_PATH.absolute()
+    server_addr = config_obj[ano_bbs_client.ConfigKeys.ADDR]
+    account_id = config_obj[ano_bbs_client.ConfigKeys.ACCOUNT]
+
+    logger.info(f"User config file: {config_path}")
+    logger.info(f"Config obj: \n{json.dumps(config_obj, indent=2)}")
+    logger.info(f"Try to connect server: {server_addr}...")
+    if not ano_bbs_client.hello_world():
+        logger.error(
+            f"There are some errors, \n"
+            f"please check the address: {server_addr}\n"
+            f"(or there are some problems in the server, Maybe you should ask the admin"
+        )
+        return False
+
+    logger.info("Connect server success!")
+    logger.info("Try to login...")
+    if not ano_bbs_client.login():
+        if account_id:
+            logger.error(
+                f"Login failed, \n"
+                f"please check the account id: {account_id}\n"
+            )
+        else:
+            logger.error(f"You account id is empty!")
+        return False
+    logger.info("Login success!")
+    print()
+    cli_query_account()
+    return True
+
+
 @click.group()
 @click.option("--version",
               is_flag=True,
@@ -225,12 +259,34 @@ def append(ctx, page_id, content):
 
 
 @cli.command()
+@click.option(
+    "-a",
+    "--account-id",
+    default=None,
+    help="Set account id"
+)
 @click.pass_context
-def account(ctx):
-    if cli_query_account():
-        ctx.exit(0)
-    else:
-        ctx.exit(1)
+def account(ctx, account_id):
+    if account_id is not None:
+        logger.info(f"Set account to {account_id}")
+        ano_bbs_client.set_account(account_id)
+    ctx.exit(0 if cli_check() else 1)
+
+
+
+@cli.command()
+@click.option(
+    "-a",
+    "--address",
+    default=None,
+    help="Set AnoBBS service address"
+)
+@click.pass_context
+def addr(ctx, address):
+    if address is not None:
+        logger.info(f"Set address to {address}")
+        ano_bbs_client.set_service_address(address)
+    ctx.exit(0 if cli_check() else 1)
 
 
 @cli.command()
@@ -244,36 +300,7 @@ def config(ctx):
 @cli.command()
 @click.pass_context
 def check(ctx):
-    config_obj = ano_bbs_client.config
-    config_path = ano_bbs_client.DEFAULT_CONFIG_PATH.absolute()
-    server_addr = config_obj[ano_bbs_client.ConfigKeys.ADDR]
-    account_id = config_obj[ano_bbs_client.ConfigKeys.ACCOUNT]
-
-    logger.info(f"User config file: {config_path}")
-    logger.info(f"Config obj: \n{json.dumps(config_obj, indent=2)}")
-    logger.info(f"Try to connect server: {server_addr}...")
-    if not ano_bbs_client.hello_world():
-        logger.error(
-            f"There are some errors, \n"
-            f"please check the address: {server_addr}\n"
-            f"(or there are some problems in the server, Maybe you should ask the admin"
-        )
-        ctx.exit(1)
-    logger.info("Connect server success!")
-    logger.info("Try to login...")
-    if not ano_bbs_client.login():
-        if account_id:
-            logger.error(
-                f"Login failed, \n"
-                f"please check the account id: {account_id}\n"
-            )
-        else:
-            logger.error(f"You account id is empty!")
-        ctx.exit(1)
-    logger.info("Login success!")
-    print()
-    cli_query_account()
-    ctx.exit(0)
+    ctx.exit(0 if cli_check() else 1)
 
 
 @cli.command()

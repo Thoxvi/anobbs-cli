@@ -319,6 +319,14 @@ class AnoBbsClient:
             return None
         return self._post(self.AnoBbsHttpApi.BlockAnoCodeByFloorNo, {"token": token, "floor_no": floor_no})
 
+    def set_account(self, account: AnyStr) -> None:
+        self.__config[self.ConfigKeys.ACCOUNT] = account
+        self.__write_config()
+
+    def set_service_address(self, address: AnyStr) -> None:
+        self.__config[self.ConfigKeys.ADDR] = address
+        self.__write_config()
+
 
 try:
     ano_bbs_client = AnoBbsClient()
