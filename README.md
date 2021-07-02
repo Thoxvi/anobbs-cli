@@ -29,7 +29,7 @@ source ./venv/bin/activate
 pip3 install -e .
 ```
 
-Add `~/.local/bin` into `PATH` for `linux` user
+Add `~/.local/bin` into `PATH` for `Linux` user
 
 ```shell
 which_shell=$(echo $SHELL|sed 's;^.*/;;g')
@@ -37,7 +37,7 @@ echo "export PATH=$HOME/.local/bin:\$PATH" >> $HOME/.${which_shell}rc
 source $HOME/.${which_shell}rc
 ```
 
-Autocomplete for `linux` and `macos` user
+Autocomplete for `Linux` and `macOS` user
 
 ```shell
 which_shell=$(echo $SHELL|sed 's;^.*/;;g')
