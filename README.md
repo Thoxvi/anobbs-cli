@@ -71,3 +71,11 @@ anobbs --help
 # anobbs post 'Hello, AnoBBS!'
 anobbs pages | less
 ```
+
+## Troubleshoot
+
+```shell
+anobbs check
+```
+
+- Token usually expires after 1 day, you better `anobbs login` every day.
