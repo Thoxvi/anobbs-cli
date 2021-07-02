@@ -124,9 +124,6 @@ class AnoBbsClient:
             raise RuntimeError(f"Config file not be found: {self.DEFAULT_CONFIG_PATH}")
         else:
             self.AnoBbsHttpApi.add_addr(self.config[self.ConfigKeys.ADDR])
-        self.account_id = self.config.get(self.ConfigKeys.ACCOUNT)
-        if not self.hello_world():
-            raise RuntimeError(f"Server address error: {self.config[self.ConfigKeys.ADDR]}")
 
     def hello_world(self) -> bool:
         try:

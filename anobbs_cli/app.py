@@ -246,6 +246,20 @@ def config(ctx):
 
 @cli.command()
 @click.pass_context
+def check(ctx):
+    if ano_bbs_client.hello_world():
+        ctx.exit(0)
+    else:
+        logger.error(
+            f"There are some errors, \n"
+            f"please check address: {ano_bbs_client.config[ano_bbs_client.ConfigKeys.ADDR]}\n"
+            f"(or there are some problems in the server, Maybe you should ask the admin"
+        )
+        ctx.exit(1)
+
+
+@cli.command()
+@click.pass_context
 def create_ic(ctx):
     res = ano_bbs_client.create_ic()
     if res:
